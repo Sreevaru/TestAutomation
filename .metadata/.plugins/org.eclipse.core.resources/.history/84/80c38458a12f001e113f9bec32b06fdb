@@ -1,0 +1,61 @@
+package com.costco.automation.scripts;
+
+import java.util.List;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
+import com.costco.automation.modules.SearchItem;
+import com.costco.automation.pageObjects.HomePageObjects;
+import com.costco.automation.pageObjects.ItemsView;
+import com.costco.automation.runner.TestBase;
+
+public class TestScript extends TestBase {
+
+	private HomePageObjects homePageObjects;
+
+	@Test(groups = { "regression" })
+	public void Verify_User_Can_Search_For_An_Item() {
+		String findProduct = "GloGlobe Solar Powered Patio Lamp";
+		SearchItem searchItem = new SearchItem();
+		searchItem.search(findProduct);
+		int temp = searchItem.getNoOfItemsFound();
+		Assert.assertTrue(temp > 0, findProduct + " Found");
+	}
+
+	@Test(groups = { "regression" })
+	public void Verify_User_Can_Add_Item_To_Cart() {
+		String findProduct = "GloGlobe Solar Powered Patio Lamp111";
+		SearchItem searchItem = new SearchItem();
+		searchItem.search("solar lights");
+		int temp = searchItem.getNoOfItemsFound();
+
+		if (temp > 0) {
+
+			List<WebElement> products = driver.findElements(HomePageObjects.product(findProduct));
+			WebElement a1 = products.stream().filter(x -> x.getTagName().equalsIgnoreCase("a")).findFirst().get();
+
+			List<WebElement> items = driver.findElements(By.tagName("a"));
+			WebElement a = items.stream().filter(x -> x.getText().trim().equalsIgnoreCase(findProduct)).findFirst()
+					.get();
+
+			if (a != null) {
+				a.click();
+				WebElement addToCartBtn = driver.findElement(ItemsView.addToCartBtn);
+				if (addToCartBtn != null) {
+					if (addToCartBtn.isEnabled() && addToCartBtn.isDisplayed()) {
+						addToCartBtn.click();
+					}
+				} else {
+					Assert.assertTrue(false, "Add To Cart Button Not Enabled");
+				}
+
+			} else {
+				Assert.assertTrue(false, findProduct + " Not Found");
+			}
+		}
+	}
+
+}
